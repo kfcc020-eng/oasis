@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>업무 FAQ 검색</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Pretendard, "Noto Sans KR", "Apple SD Gothic Neo",
+        Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+    }
+
+    .container {
+      width: min(900px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 80px;
+    }
+
+    .header {
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      margin: 0 0 10px;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .header p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .search-panel {
+      padding: 24px;
+      margin-bottom: 24px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      height: 54px;
+      padding: 0 18px 0 48px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background: #ffffff;
+      font-size: 16px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 17px;
+      transform: translateY(-50%);
+      font-size: 19px;
+      color: #9ca3af;
+      pointer-events: none;
+    }
+
+    .filter-section {
+      margin-top: 20px;
+    }
+
+    .filter-title {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-btn,
+    .reset-btn {
+      padding: 9px 16px;
+      border-radius: 20px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #4b5563;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .filter-btn:hover {
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .filter-btn.active {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .reset-btn {
+      margin-left: auto;
+      background: #f9fafb;
+    }
+
+    .reset-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 30px 0 14px;
+    }
+
+    .result-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .result-count {
+      color: #2563eb;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .faq-card {
+      padding: 22px 24px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      transition: 0.15s;
+    }
+
+    .faq-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 5px 9px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .question {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 13px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .question-label {
+      flex-shrink: 0;
+      color: #2563eb;
+    }
+
+    .answer {
+      display: flex;
+      gap: 8px;
+      padding-top: 13px;
+      border-top: 1px solid #f1f5f9;
+      color: #4b5563;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .answer-label {
+      flex-shrink: 0;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    mark {
+      padding: 1px 3px;
+      border-radius: 3px;
+      background: #fef08a;
+      color: inherit;
+    }
+
+    /* 검색 결과 없음 */
+    .empty-result {
+      padding: 48px 24px;
+      text-align: center;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      color: #4b5563;
+      line-height: 1.8;
+    }
+
+    .empty-icon {
+      display: block;
+      margin-bottom: 14px;
+      font-size: 34px;
+    }
+
+    .empty-result strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #111827;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: min(100% - 20px, 900px);
+        padding-top: 32px;
+      }
+
+      .header h1 {
+        font-size: 26px;
+      }
+
+      .search-panel {
+        padding: 18px;
+      }
+
+      .reset-btn {
+        width: 100%;
+        margin: 5px 0 0;
+      }
+
+      .faq-card {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+
+    <header class="header">
+      <h1>업무 FAQ 검색</h1>
+      <p>질문이나 업무 관련 키워드를 검색해 보세요.</p>
+    </header>
+
+    <section class="search-panel">
+
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="질문이나 키워드를 입력하세요."
+          autocomplete="off"
+          aria-label="FAQ 검색"
+        />
+      </div>
+
+      <div class="filter-section">
+        <span class="filter-title">분류</span>
+
+        <div class="filter-row">
+          <button class="filter-btn active" data-category="전체">
+            전체
+          </button>
+
+          <button class="filter-btn" data-category="경영지원">
+            경영지원
+          </button>
+
+          <button class="filter-btn" data-category="검사">
+            검사
+          </button>
+
+          <button class="filter-btn" data-category="공제">
+            공제
+          </button>
+
+          <button class="filter-btn" data-category="IT">
+            IT
+          </button>
+
+          <button class="reset-btn" id="resetBtn">
+            전체보기
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="result-header">
+        <h2>검색 결과</h2>
+        <span class="result-count" id="resultCount"></span>
+      </div>
+
+      <div class="faq-list" id="faqList"></div>
+    </section>
+
+  </main>
+
+  <script>
+    /*
+      중요:
+      아래 데이터는 첨부 JSON의 내용만 사용합니다.
+
+      이 앱에는 새로운 답변을 생성하는 기능이 없습니다.
+      검색 결과가 없더라도 AI 또는 JavaScript가
+      임의의 답변을 작성하지 않습니다.
+    */
+    const faqData = [
+      {
+        category: "경영지원",
+        question: "선거를 마음대로 해도 될까요?",
+        answer_seed: "되겠냐?"
+      },
+      {
+        category: "검사",
+        question: "한도를 위반해서 대출하면 어떻게 되나요?",
+        answer_seed: "제재를 받지."
+      },
+      {
+        category: "공제",
+        question: "3대 의무를 이행하지 않아도 될까요?",
+        answer_seed: "너에게 큰 책임이 따를 것이다."
+      },
+      {
+        category: "IT",
+        question: "PC를 집에 가져가서 써도 되냐요?",
+        answer_seed: "그러다가 걸리면 너도 집에 가야 할거야."
+      },
+      {
+        category: "경영지원",
+        question: "ChatGPT가 시키는 대로 업무해도 될까요?",
+        answer_seed: "참고만 하고 너무 믿지는 마."
+      }
+    ];
+
+    const searchInput = document.getElementById("searchInput");
+    const faqList = document.getElementById("faqList");
+    const resultCount = document.getElementById("resultCount");
+    const resetBtn = document.getElementById("resetBtn");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+
+    let selectedCategory = "전체";
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeRegExp(value) {
+      return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function highlightText(text, keyword) {
+      const safeText = escapeHTML(text);
+
+      if (!keyword.trim()) {
+        return safeText;
+      }
+
+      const safeKeyword =
+        escapeRegExp(escapeHTML(keyword.trim()));
+
+      const regex =
+        new RegExp(`(${safeKeyword})`, "gi");
+
+      return safeText.replace(
+        regex,
+        "<mark>$1</mark>"
+      );
+    }
+
+    function getFilteredFAQs() {
+      const keyword =
+        searchInput.value.trim().toLowerCase();
+
+      return faqData.filter((faq) => {
+
+        const matchesCategory =
+          selectedCategory === "전체" ||
+          faq.category === selectedCategory;
+
+        const searchableText = [
+          faq.question,
+          faq.answer_seed,
+          faq.category
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        const matchesKeyword =
+          keyword === "" ||
+          searchableText.includes(keyword);
+
+        return matchesCategory && matchesKeyword;
+      });
+    }
+
+    function renderFAQs() {
+      const keyword = searchInput.value.trim();
+      const filteredFAQs = getFilteredFAQs();
+
+      resultCount.textContent =
+        `총 ${filteredFAQs.length}건`;
+
+      /*
+        검색 결과가 없을 경우
+        새로운 답변을 만들지 않고
+        고정된 안내 문구만 보여줍니다.
+      */
+      if (filteredFAQs.length === 0) {
+        faqList.innerHTML = `
+          <div class="empty-result">
+            <span class="empty-icon">🔎</span>
+
+            <strong>
+              등록된 FAQ에서 답변을 찾을 수 없습니다.
+            </strong>
+
+            <div>
+              관련 담당부서 또는 공식 안내자료를 확인해 주세요.
+            </div>
+          </div>
+        `;
+
+        return;
+      }
+
+      faqList.innerHTML = filteredFAQs
+        .map((faq) => {
+          return `
+            <article class="faq-card">
+
+              <span class="category-badge">
+                ${highlightText(
+                  faq.category,
+                  keyword
+                )}
+              </span>
+
+              <div class="question">
+                <span class="question-label">
+                  Q.
+                </span>
+
+                <span>
+                  ${highlightText(
+                    faq.question,
+                    keyword
+                  )}
+                </span>
+              </div>
+
+              <div class="answer">
+                <span class="answer-label">
+                  A.
+                </span>
+
+                <span>
+                  ${highlightText(
+                    faq.answer_seed,
+                    keyword
+                  )}
+                </span>
+              </div>
+
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    /*
+      키워드 검색
+    */
+    searchInput.addEventListener(
+      "input",
+      renderFAQs
+    );
+
+    /*
+      카테고리 필터
+    */
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+
+        selectedCategory =
+          button.dataset.category;
+
+        filterButtons.forEach((btn) => {
+          btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        renderFAQs();
+      });
+    });
+
+    /*
+      전체보기
+      - 검색어 초기화
+      - 카테고리 전체 선택
+    */
+    resetBtn.addEventListener("click", () => {
+
+      searchInput.value = "";
+      selectedCategory = "전체";
+
+      filterButtons.forEach((button) => {
+        button.classList.toggle(
+          "active",
+          button.dataset.category === "전체"
+        );
+      });
+
+      searchInput.focus();
+      renderFAQs();
+    });
+
+    /*
+      최초 화면 표시
+    */
+    renderFAQs();
+  </script>
+
+</body>
+</html>
